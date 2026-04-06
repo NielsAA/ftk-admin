@@ -17,7 +17,7 @@
             <div>
                 <h4 class="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Produkt</h4>
                 <ul class="space-y-3">
-                    @foreach ([[route('home').'#features', 'Funktioner'], [route('home').'#priser', 'Priser'], [route('home').'#instruktorer', 'Instruktører']] as [$href, $label])
+                    @foreach ([[route('home').'#features', 'Funktioner'], [route('home').'#priser', 'Gode Priser'], [route('home').'#instruktorer', 'Instruktører']] as [$href, $label])
                         <li><a href="{{ $href }}" class="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">{{ $label }}</a></li>
                     @endforeach
                 </ul>
