@@ -36,8 +36,8 @@ new class extends Component {
             ->orderBy('lastname')
             ->get()
             ->map(function (Member $member) use ($statusById): array {
-                $statusId = (int) ($member->getAttribute('member_statuses_id')
-                    ?? $member->getAttribute('member_status_id')
+                $statusId = (int) ($member->getAttribute('member_status_id')
+                    ?? $member->getAttribute('member_statuses_id')
                     ?? 0);
 
                 $status = $statusById->get($statusId);

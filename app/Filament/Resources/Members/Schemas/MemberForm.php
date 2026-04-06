@@ -39,50 +39,43 @@ class MemberForm
                         DatePicker::make('birthdate'),
                         Select::make('gender')
                             ->options(['male' => 'Male', 'female' => 'Female'])
-                            ->default(null)
+                            ->default(null),
 
                     ])
                     ->columns(2),
 
+                FileUpload::make('profile_photo_path')
+                    ->label('Profilbillede')
+                    ->image()
+                    ->disk('public')
+                    ->directory('members/profile-images')
+                    ->visibility('public'),
 
+                Section::make('Medlemsoplysninger')
+                    ->schema([
+                        Select::make('user_id')
+                            ->label('Bruger')
+                            ->options(fn (): array => User::query()->orderBy('name')->pluck('name', 'id')->all())
+                            ->searchable()
+                            ->preload()
+                            ->default(null),
+                        Select::make('member_status_id')
+                            ->label('Status')
+                            ->options(fn (): array => MemberStatus::query()->orderBy('name')->pluck('name', 'id')->all())
+                            ->searchable()
+                            ->preload()
+                            ->default(null),
+                        Select::make('team_ids')
+                            ->label('Hold')
+                            ->options(fn (): array => Team::query()->orderBy('name')->pluck('name', 'id')->all())
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->default([]),
+                    ])
+                    ->columns(1),
 
-                        FileUpload::make('profile_photo_path')
-                            ->label('Profilbillede')
-                            ->image()
-                            ->disk('public')
-                            ->directory('members/profile-images')
-                            ->visibility('public'),
-
-
-
-            Section::make('Medlemsoplysninger')
-            ->schema([
-                Select::make('user_id')
-                    ->label('Bruger')
-                    ->options(fn (): array => User::query()->orderBy('name')->pluck('name', 'id')->all())
-                    ->searchable()
-                    ->preload()
-                    ->default(null),
-                Select::make('member_statuses_id')
-                    ->label('Status')
-                    ->options(fn (): array => MemberStatus::query()->orderBy('name')->pluck('name', 'id')->all())
-                    ->searchable()
-                    ->preload()
-                    ->default(null),
-                Select::make('team_ids')
-                    ->label('Hold')
-                    ->options(fn (): array => Team::query()->orderBy('name')->pluck('name', 'id')->all())
-                    ->multiple()
-                    ->searchable()
-                    ->preload()
-                    ->default([]),
-            ])
-            ->columns(1),
-
-
-
-
-                    section::make('Kontaktinformation')
+                Section::make('Kontaktinformation')
                     ->schema([
                         TextInput::make('email')
                             ->label('Email address')
@@ -94,14 +87,10 @@ class MemberForm
 
                     ])->columns(1),
 
-
-
-                
                 Section::make('Betalingsoplysninger')
                     ->collapsible()
                     ->collapsed()
-                    ->schema([  
-
+                    ->schema([
 
                         TextInput::make('stripe_id')
                             ->default(null)

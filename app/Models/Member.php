@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -15,7 +15,7 @@ class Member extends Model
 
     protected $fillable = [
         'user_id',
-        'member_statuses_id',
+        'member_status_id',
         'firstname',
         'lastname',
         'email',
@@ -50,7 +50,7 @@ class Member extends Model
      */
     public function memberStatus(): BelongsTo
     {
-        return $this->belongsTo(MemberStatus::class, 'member_statuses_id');
+        return $this->belongsTo(MemberStatus::class, 'member_status_id');
     }
 
     /**

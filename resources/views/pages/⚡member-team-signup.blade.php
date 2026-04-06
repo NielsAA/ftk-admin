@@ -12,6 +12,8 @@ new #[Layout('layouts::app'), Title('Hold tilmelding')] class extends Component 
     public Collection $teams;
     public Collection $members;
     public array $enrolled_team_ids = [];
+    public array $active_subscriptions = [];
+    public ?string $member_billing_portal_url = null;
     public ?string $selected_member_id = null;
 
     public function mount(): void
@@ -32,6 +34,7 @@ new #[Layout('layouts::app'), Title('Hold tilmelding')] class extends Component 
             : null;
 
         $this->updateEnrolledTeams();
+        $this->updateActiveSubscriptions();
     }
 
     public function updateEnrolledTeams(): void
@@ -56,11 +59,63 @@ new #[Layout('layouts::app'), Title('Hold tilmelding')] class extends Component 
             ->all();
     }
 
+    public function updateActiveSubscriptions(): void
+    {
+        if (! $this->selected_member_id) {
+            $this->active_subscriptions = [];
+            $this->member_billing_portal_url = null;
+
+            return;
+        }
+
+        $member = $this->members->firstWhere('id', (int) $this->selected_member_id);
+
+        if (! $member) {
+            $this->active_subscriptions = [];
+            $this->member_billing_portal_url = null;
+
+            return;
+        }
+
+        $this->member_billing_portal_url = $member->stripe_id
+            ? $member->billingPortalUrl(route('member.teams.signup'))
+            : null;
+
+        $teamNameBySubscriptionId = $member
+            ->memberOfTeams()
+            ->with('team:id,name')
+            ->whereNull('left_at')
+            ->whereNotNull('stripe_subscription_id')
+            ->where('stripe_subscription_id', '!=', '')
+            ->get()
+            ->mapWithKeys(fn ($enrollment): array => [
+                $enrollment->stripe_subscription_id => $enrollment->team?->name,
+            ])
+            ->all();
+
+        $this->active_subscriptions = $member
+            ->subscriptions()
+            ->whereIn('stripe_status', ['active', 'trialing'])
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn ($subscription): array => [
+                'stripe_id' => (string) $subscription->stripe_id,
+                'team_name' => $teamNameBySubscriptionId[$subscription->stripe_id] ?? null,
+                'status' => (string) $subscription->stripe_status,
+                'stripe_price' => (string) ($subscription->stripe_price ?? ''),
+                'quantity' => $subscription->quantity,
+                'ends_at' => $subscription->ends_at?->format('d-m-Y'),
+            ])
+            ->values()
+            ->all();
+    }
+
     #[\Livewire\Attributes\On('updated')]
     public function updated($property): void
     {
         if ($property === 'selected_member_id') {
             $this->updateEnrolledTeams();
+            $this->updateActiveSubscriptions();
         }
     }
 }; ?>
@@ -201,4 +256,63 @@ new #[Layout('layouts::app'), Title('Hold tilmelding')] class extends Component 
             </div>
         </div>
     </div>
+
+    @if ($members->isNotEmpty())
+        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                    <flux:heading size="sm">Aktive Stripe subscriptions</flux:heading>
+                    @if ($member_billing_portal_url)
+                        <flux:button
+                            variant="ghost"
+                            size="sm"
+                            href="{{ $member_billing_portal_url }}"
+                            target="_blank"
+                        >
+                            Åbn billing side
+                        </flux:button>
+                    @endif
+                </div>
+
+                @if ($active_subscriptions !== [])
+                    <div class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-700">
+                                <thead class="bg-zinc-50 dark:bg-zinc-800/60">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-zinc-600 dark:text-zinc-300">Hold</th>
+                                        <th class="px-3 py-2 text-left font-medium text-zinc-600 dark:text-zinc-300">Status</th>
+                                        <th class="px-3 py-2 text-left font-medium text-zinc-600 dark:text-zinc-300">Pris ID</th>
+                                        <th class="px-3 py-2 text-left font-medium text-zinc-600 dark:text-zinc-300">Subscription ID</th>
+                                        <th class="px-3 py-2 text-left font-medium text-zinc-600 dark:text-zinc-300">Antal</th>
+                                        <th class="px-3 py-2 text-left font-medium text-zinc-600 dark:text-zinc-300">Slutter</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-zinc-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
+                                    @foreach ($active_subscriptions as $subscription)
+                                        <tr>
+                                            <td class="px-3 py-2 text-zinc-800 dark:text-zinc-100">{{ $subscription['team_name'] ?: 'Ukendt hold' }}</td>
+                                            <td class="px-3 py-2">
+                                                <flux:badge :color="$subscription['status'] === 'active' ? 'green' : 'sky'">
+                                                    {{ $subscription['status'] }}
+                                                </flux:badge>
+                                            </td>
+                                            <td class="px-3 py-2 text-zinc-700 dark:text-zinc-300">{{ $subscription['stripe_price'] ?: '-' }}</td>
+                                            <td class="px-3 py-2 font-mono text-xs text-zinc-700 dark:text-zinc-300">{{ $subscription['stripe_id'] }}</td>
+                                            <td class="px-3 py-2 text-zinc-700 dark:text-zinc-300">{{ $subscription['quantity'] ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-zinc-700 dark:text-zinc-300">{{ $subscription['ends_at'] ?: '-' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @else
+                    <div class="rounded-xl border border-dashed border-zinc-300 p-4 text-sm text-zinc-600 dark:border-zinc-600 dark:text-zinc-300">
+                        Ingen aktive Stripe subscriptions for valgt medlem.
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
 </div>

@@ -60,6 +60,18 @@
                         {{ __('Træningshistorik') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
+
+                <flux:sidebar.group :heading="__('Træner')" class="mt-4 grid">
+                    <flux:sidebar.item
+                        icon="clipboard-document-list"
+                        :href="route('member.training.enrollment.overview')"
+                        :current="request()->routeIs('member.training.enrollment.overview')"
+                        class="rounded-lg {{ request()->routeIs('member.training.enrollment.overview') ? $activeSidebarItemClasses : $inactiveSidebarItemClasses }}"
+                        wire:navigate
+                    >
+                        {{ __('ChekIn oversig') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
@@ -111,6 +123,10 @@
 
                         <flux:menu.item :href="route('member.teams.signup')" icon="users" wire:navigate>
                             {{ __('Hold tilmelding') }}
+                        </flux:menu.item>
+
+                        <flux:menu.item :href="route('member.training.enrollment.overview')" icon="clipboard-document-list" wire:navigate>
+                            {{ __('ChekIn oversig') }}
                         </flux:menu.item>
 
                         <flux:menu.item :href="route('member.check-in.history')" icon="clock" wire:navigate>

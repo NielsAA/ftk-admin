@@ -1,9 +1,12 @@
 <?php
 
 use App\Models\Member;
+use App\Models\MemberOfTeam;
+use App\Models\MemberTeamFunction;
 use App\Models\Team;
 use App\Models\TrainingSession;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 test('member team signup layout page is displayed', function () {
     $user = User::factory()->create();
@@ -60,7 +63,7 @@ test('team signup menu item is visible in app navigation', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-    ->get(route('member.profile.edit'))
+        ->get(route('member.profile.edit'))
         ->assertOk()
         ->assertSee('Hold tilmelding');
 });
@@ -87,4 +90,56 @@ test('team signup cards show current training sessions', function () {
         ->assertOk()
         ->assertSee('Giver adgang til')
         ->assertSee('MMA Basis');
+});
+
+test('active stripe subscriptions table is shown with active subscriptions', function () {
+    $user = User::factory()->create();
+
+    $member = Member::create([
+        'user_id' => $user->id,
+        'firstname' => 'Sanne',
+        'lastname' => 'Nielsen',
+        'email' => 'sanne.sub@example.com',
+    ]);
+
+    $team = Team::create([
+        'name' => 'Brydning Hold',
+        'number' => 'BH1',
+    ]);
+
+    $function = MemberTeamFunction::create([
+        'name' => 'Medlem',
+        'default_member_function' => true,
+    ]);
+
+    MemberOfTeam::create([
+        'member_id' => $member->id,
+        'team_id' => $team->id,
+        'member_team_function_id' => $function->id,
+        'joined_at' => now()->toDateString(),
+        'left_at' => null,
+        'stripe_subscription_id' => 'sub_active_123',
+    ]);
+
+    DB::table('subscriptions')->insert([
+        'member_id' => $member->id,
+        'type' => 'default',
+        'stripe_id' => 'sub_active_123',
+        'stripe_status' => 'active',
+        'stripe_price' => 'price_active_123',
+        'quantity' => 1,
+        'trial_ends_at' => null,
+        'ends_at' => null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('member.teams.signup'))
+        ->assertOk()
+        ->assertSee('Aktive Stripe subscriptions')
+        ->assertSee('Brydning Hold')
+        ->assertSee('sub_active_123')
+        ->assertSee('price_active_123')
+        ->assertSee('active');
 });

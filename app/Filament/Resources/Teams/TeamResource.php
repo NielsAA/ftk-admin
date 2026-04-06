@@ -5,15 +5,16 @@ namespace App\Filament\Resources\Teams;
 use App\Filament\Resources\Teams\Pages\CreateTeam;
 use App\Filament\Resources\Teams\Pages\EditTeam;
 use App\Filament\Resources\Teams\Pages\ListTeams;
+use App\Filament\Resources\Teams\RelationManagers\MembersOfTeamRelationManager;
 use App\Filament\Resources\Teams\Schemas\TeamForm;
 use App\Filament\Resources\Teams\Tables\TeamsTable;
 use App\Models\Team;
 use BackedEnum;
-use Illuminate\Database\Eloquent\Builder;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class TeamResource extends Resource
 {
@@ -40,7 +41,7 @@ class TeamResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            MembersOfTeamRelationManager::class,
         ];
     }
 
