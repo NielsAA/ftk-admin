@@ -4,6 +4,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\MemberImportTemplateController;
 use App\Http\Controllers\TeamCheckoutSuccessController;
+use App\Http\Controllers\TeamUnenrollController;
 use App\Http\Controllers\TrainingSchedulePageController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('dashboard/traeningshistorik', 'pages::member-check-in-history')->name('member.check-in.history');
 
     Route::post('dashboard/hold-tilmelding/{team}/checkout', CheckoutController::class)->name('member.teams.checkout');
+    Route::post('dashboard/hold-tilmelding/{team}/afmeld', TeamUnenrollController::class)->name('member.teams.unenroll');
 
     Route::get('dashboard/hold-tilmelding/success', TeamCheckoutSuccessController::class)->name('member.teams.checkout.success');
 });

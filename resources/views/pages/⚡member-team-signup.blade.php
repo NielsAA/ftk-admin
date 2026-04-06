@@ -235,9 +235,13 @@ new #[Layout('layouts::app'), Title('Hold tilmelding')] class extends Component 
 
                             <div class="mt-4">
                                 @if ($isEnrolled)
-                                    <flux:button type="button" variant="ghost" class="w-full text-red-600 hover:bg-red-50 dark:hover:bg-red-950">
-                                        Afmeld hold
-                                    </flux:button>
+                                    <form method="POST" action="{{ route('member.teams.unenroll', $team) }}">
+                                        @csrf
+                                        <input type="hidden" name="member_id" value="{{ $selected_member_id }}">
+                                        <flux:button type="submit" variant="ghost" class="w-full !bg-red-600 !text-white hover:!bg-red-700 dark:!bg-red-500 dark:hover:!bg-red-400">
+                                            Afmeld hold
+                                        </flux:button>
+                                    </form>
                                 @else
                                     <form method="POST" action="{{ route('member.teams.checkout', $team) }}">
                                         @csrf
