@@ -40,7 +40,11 @@
         themeButton.addEventListener('click', function () {
             const isDark = html.classList.contains('dark');
             applyTheme(!isDark);
-            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+            if (window.Flux && typeof window.Flux.applyAppearance === 'function') {
+                window.Flux.applyAppearance(isDark ? 'light' : 'dark');
+            } else {
+                localStorage.setItem('flux.appearance', isDark ? 'light' : 'dark');
+            }
         });
 
         mobileMenuButton.addEventListener('click', function () {

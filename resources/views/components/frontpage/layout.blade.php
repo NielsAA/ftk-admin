@@ -14,16 +14,6 @@
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @fluxAppearance
-    {{-- Apply dark mode before first paint to avoid flash --}}
-    <script>
-        (function () {
-            const stored = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (stored === 'dark' || (!stored && prefersDark)) {
-                document.documentElement.classList.add('dark');
-            }
-        })();
-    </script>
 </head>
 <body {{ $attributes->merge(['class' => 'text-zinc-900 dark:text-zinc-100 antialiased ' . $bodyClass]) }}>
 
