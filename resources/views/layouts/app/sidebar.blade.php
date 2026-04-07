@@ -18,20 +18,31 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        
+
+        <flux:sidebar sticky collapsible="mobile" class="w-full h-full border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 p-0 m-0">
+
+        <!-- Header -->
+
             <flux:sidebar.header>
-                <a href="{{ route('member.profile.edit') }}" wire:navigate class="block w-full">
-                    <flux:sidebar.profile
-                        :name="$displayName"
-                        :avatar="$avatarUrl"
-                        :initials="auth()->user()->initials()"
-                    />
+                <a href="{{ route('member.profile.edit') }}" wire:navigate class="block w-full py-2">
+                    <div class="flex items-center justify-center gap-2">
+                        <flux:avatar
+                            :src="$avatarUrl"
+                            :name="$displayName"
+                            :initials="auth()->user()->initials()"
+                            size="md"
+                        />
+                        <div class="text-xs font-medium text-zinc-700 dark:text-zinc-200 truncate">{{ $displayName }}</div>
+                    </div>
                 </a>
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
 
+        <!-- Navigation -->
+
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
+                <flux:sidebar.group :heading="__('Medlemsinfo')" class="grid">
                     <flux:sidebar.item
                         icon="user"
                         :href="route('member.profile.edit')"
@@ -57,10 +68,11 @@
                         class="rounded-lg {{ request()->routeIs('member.check-in.history') ? $activeSidebarItemClasses : $inactiveSidebarItemClasses }}"
                         wire:navigate
                     >
-                        {{ __('Træningshistorik') }}
+                        {{ __('TræningshistorikA') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
 
+                
                 <flux:sidebar.group :heading="__('Træner')" class="mt-4 grid">
                     <flux:sidebar.item
                         icon="clipboard-document-list"
@@ -69,7 +81,7 @@
                         class="rounded-lg {{ request()->routeIs('member.training.enrollment.overview') ? $activeSidebarItemClasses : $inactiveSidebarItemClasses }}"
                         wire:navigate
                     >
-                        {{ __('ChekIn oversig') }}
+                        {{ __('CheckIn oversigt') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
@@ -77,15 +89,31 @@
             <flux:spacer />
 
             <flux:sidebar.nav class="border-t border-zinc-200 pt-3 dark:border-zinc-700">
-                <flux:sidebar.item
-                    icon="cog"
-                    :href="route('profile.edit')"
-                    :current="request()->routeIs('profile.*')"
-                    class="rounded-lg {{ request()->routeIs('profile.*') ? $activeSidebarItemClasses : $inactiveSidebarItemClasses }}"
-                    wire:navigate
-                >
-                    {{ __('Settings') }}
-                </flux:sidebar.item>
+            <!-- Dag/nat tema -->
+            <flux:dropdown x-data align="end">
+                <flux:button variant="subtle" class="group flex items-center gap-2" aria-label="Preferred color scheme">
+                    <flux:icon.sun x-show="$flux.appearance === 'light'" variant="mini" class="text-zinc-500 dark:text-white" />
+                    <flux:icon.moon x-show="$flux.appearance === 'dark'" variant="mini" class="text-zinc-500 dark:text-white" />
+                    <flux:icon.moon x-show="$flux.appearance === 'system' && $flux.dark" variant="mini" />
+                    <flux:icon.sun x-show="$flux.appearance === 'system' && ! $flux.dark" variant="mini" />
+                    <span class="ms-2 align-middle">
+                        <span x-show="$flux.appearance === 'light'">{{ __('Dag') }}</span>
+                        <span x-show="$flux.appearance === 'dark'">{{ __('Nat') }}</span>
+                        <span x-show="$flux.appearance === 'system'">{{ __('System') }}</span>
+                    </span>
+                </flux:button>
+                <flux:menu>
+                    <flux:menu.item icon="sun" x-on:click="$flux.appearance = 'light'">{{ __('Dag') }}</flux:menu.item>
+                    <flux:menu.item icon="moon" x-on:click="$flux.appearance = 'dark'">{{ __('Nat') }}</flux:menu.item>
+                    <flux:menu.item icon="computer-desktop" x-on:click="$flux.appearance = 'system'">{{ __('System') }}</flux:menu.item>
+                </flux:menu>
+            </flux:dropdown>
+
+
+            <flux:sidebar.item :href="route('profile.edit')" wire:navigate>{{ __('Bruger profil') }}</flux:sidebar.item>
+
+
+
 
                 <form method="POST" action="{{ route('logout') }}" class="mt-2">
                     @csrf
@@ -101,61 +129,13 @@
             </flux:sidebar.nav>
         </flux:sidebar>
 
+
         <!-- Mobile User Menu -->
-        <div class="lg:hidden">
-        <flux:header>
-            <flux:sidebar.toggle icon="bars-2" inset="left" />
-
-            <flux:spacer />
-
-            <flux:dropdown position="top" align="end">
-                <flux:profile
-                    :name="$displayName"
-                    :initials="auth()->user()->initials()"
-                    icon-trailing="chevron-down"
-                />
-
-                <flux:menu>
-                    <flux:menu.radio.group>
-                        <flux:menu.item :href="route('member.profile.edit')" icon="user" wire:navigate>
-                            {{ __('Profil') }}
-                        </flux:menu.item>
-
-                        <flux:menu.item :href="route('member.teams.signup')" icon="users" wire:navigate>
-                            {{ __('Hold tilmelding') }}
-                        </flux:menu.item>
-
-                        <flux:menu.item :href="route('member.training.enrollment.overview')" icon="clipboard-document-list" wire:navigate>
-                            {{ __('ChekIn oversig') }}
-                        </flux:menu.item>
-
-                        <flux:menu.item :href="route('member.check-in.history')" icon="clock" wire:navigate>
-                            {{ __('Træningshistorik') }}
-                        </flux:menu.item>
-
-                        <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
-                            {{ __('Settings') }}
-                        </flux:menu.item>
-                    </flux:menu.radio.group>
-
-                    <flux:menu.separator />
-
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
-                        <flux:menu.item
-                            as="button"
-                            type="submit"
-                            icon="arrow-right-start-on-rectangle"
-                            class="w-full cursor-pointer"
-                            data-test="logout-button"
-                        >
-                            {{ __('Log out') }}
-                        </flux:menu.item>
-                    </form>
-                </flux:menu>
-            </flux:dropdown>
+        <flux:header class="lg:hidden">
+            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+            
+            
         </flux:header>
-        </div>
 
         {{ $slot }}
 

@@ -75,52 +75,53 @@ new #[Title('Profile settings')] class extends Component {
     }
 }; ?>
 
-<section class="w-full">
-    @include('partials.settings-heading')
+<x-pages::settings.layout
+    :heading="__('Rediger brugerprofil')"
+    :subheading="__('Opdater dit navn og din email-adresse')"
+>
+    <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
+        <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
 
-    <flux:heading class="sr-only">{{ __('Profile settings') }}</flux:heading>
+        <div>
+            <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
 
-    <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
-        <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
+            @if ($this->hasUnverifiedEmail)
+                <div>
+                    <flux:text class="mt-4">
+                        {{ __('Your email address is unverified.') }}
 
-            <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+                        <flux:link class="text-sm cursor-pointer" wire:click.prevent="resendVerificationNotification">
+                            {{ __('Click here to re-send the verification email.') }}
+                        </flux:link>
+                    </flux:text>
 
-                @if ($this->hasUnverifiedEmail)
-                    <div>
-                        <flux:text class="mt-4">
-                            {{ __('Your email address is unverified.') }}
-
-                            <flux:link class="text-sm cursor-pointer" wire:click.prevent="resendVerificationNotification">
-                                {{ __('Click here to re-send the verification email.') }}
-                            </flux:link>
+                    @if (session('status') === 'verification-link-sent')
+                        <flux:text class="mt-2 font-medium !dark:text-green-400 !text-green-600">
+                            {{ __('A new verification link has been sent to your email address.') }}
                         </flux:text>
-
-                        @if (session('status') === 'verification-link-sent')
-                            <flux:text class="mt-2 font-medium !dark:text-green-400 !text-green-600">
-                                {{ __('A new verification link has been sent to your email address.') }}
-                            </flux:text>
-                        @endif
-                    </div>
-                @endif
-            </div>
-
-            <div class="flex items-center gap-4">
-                <div class="flex items-center justify-end">
-                    <flux:button variant="primary" type="submit" class="w-full" data-test="update-profile-button">
-                        {{ __('Save') }}
-                    </flux:button>
+                    @endif
                 </div>
+            @endif
+        </div>
 
-                <x-action-message class="me-3" on="profile-updated">
-                    {{ __('Saved.') }}
-                </x-action-message>
-            </div>
-        </form>
+        <div class="flex items-center gap-4">
+            <flux:button variant="primary" type="submit" class="w-full flex-1" data-test="update-profile-button">
+                {{ __('Save') }}
+            </flux:button>
 
-        @if ($this->showDeleteUser)
-            <livewire:pages::settings.delete-user-form />
-        @endif
-    </x-pages::settings.layout>
-</section>
+            <a href="{{ route('security.edit') }}" wire:navigate class="w-full flex-1">
+                <flux:button variant="outline" type="button" class="w-full">
+                    {{ __('Skift adgangskode') }}
+                </flux:button>
+            </a>
+
+            <x-action-message class="me-3" on="profile-updated">
+                {{ __('Saved.') }}
+            </x-action-message>
+        </div>
+    </form>
+
+    @if ($this->showDeleteUser)
+        <livewire:pages::settings.delete-user-form />
+    @endif
+</x-pages::settings.layout>
