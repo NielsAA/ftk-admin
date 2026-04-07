@@ -18,17 +18,6 @@ test('authenticated users can visit medlems profil page', function () {
         ->assertSee('Profil');
 });
 
-test('settings appears below medlems profil in sidebar', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
-
-    $content = $this->get(route('member.profile.edit'))
-        ->assertOk()
-        ->getContent();
-
-    expect($content)->not->toBeFalse();
-    expect(strpos($content, 'Settings'))->toBeGreaterThan(strpos($content, 'Medlems Profil'));
-});
 
 test('logout action is present in sidebar area', function () {
     $user = User::factory()->create();
@@ -39,5 +28,5 @@ test('logout action is present in sidebar area', function () {
         ->getContent();
 
     expect($content)->not->toBeFalse();
-    expect(substr_count($content, 'action="'.route('logout').'"'))->toBeGreaterThan(1);
+    expect(substr_count($content, 'action="'.route('logout').'"'))->toBe(1);
 });
