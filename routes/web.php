@@ -24,7 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('dashboard/traeningshistorik', 'pages::member-check-in-history')->name('member.check-in.history');
 
     Route::post('dashboard/hold-tilmelding/{team}/checkout', CheckoutController::class)->name('member.teams.checkout');
-    Route::post('dashboard/hold-tilmelding/{team}/afmeld', TeamUnenrollController::class)->name('member.teams.unenroll');
+    Route::post('dashboard/hold-tilmelding/{team}/afmeld', [TeamUnenrollController::class, 'unenroll'])->name('member.teams.unenroll');
 
     Route::get('dashboard/hold-tilmelding/success', TeamCheckoutSuccessController::class)->name('member.teams.checkout.success');
 });
